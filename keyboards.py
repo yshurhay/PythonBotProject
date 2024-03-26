@@ -18,6 +18,12 @@ def paginator(buttons: list[str], pref: str, page: int = 0):
         elif button == 'След ▶':
             builder.add(InlineKeyboardButton(text=button, callback_data=Pagination(page=page, action=f'next_{pref}',
                                                                                    pref=pref).pack()))
+        elif button == '+1':
+            builder.add(InlineKeyboardButton(text=button, callback_data=Pagination(page=page, action='+1',
+                                                                                   pref=pref).pack()))
+        elif button == '-1':
+            builder.add(InlineKeyboardButton(text=button, callback_data=Pagination(page=page, action='-1',
+                                                                                   pref=pref).pack()))
         else:
             builder.add(InlineKeyboardButton(text=button, callback_data=button))
 

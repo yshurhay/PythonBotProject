@@ -89,11 +89,47 @@ async def callback_food(callback: CallbackQuery):
                                       reply_markup=kb.paginator(buttons=data['buttons'], pref=pref))
 
 
+@router.callback_query(kb.Pagination.filter(F.action.in_(['+1', '-1'])))
+async def count_handler(callback: CallbackQuery, callback_data: kb.Pagination):
+    page = int(callback_data.page)
+    pref = callback_data.pref
+
+    if callback_data.action == '+1':
+        info['item_captions'][page]['count'] += 1
+        info['final_price'] += float(info['item_captions'][page]['price'])
+
+    elif callback_data.action == '-1':
+        info['item_captions'][page]['count'] -= 1
+        info['final_price'] -= float(info['item_captions'][page]['price'])
+        if info['item_captions'][page]['count'] == 0:
+            await callback.answer('Товар удалён')
+            info['item_captions'].remove(info['item_captions'][page])
+            page -= 1
+
+    if info['item_captions']:
+
+        caption = (f'{info['item_captions'][page]['name']}\n'
+                   f'{info['item_captions'][page]['mass']}\n'
+                   f'{info['item_captions'][page]['count']} х {info['item_captions'][page]['price']} руб.\n\n'
+                   f'Итого: {info['final_price']:.2f} руб.')
+        data = buttons[info['category']]
+        photo_url = info[f'{pref}_captions'][page]['photo']
+
+        await callback.answer()
+        await callback.message.edit_media(media=InputMediaPhoto(media=photo_url, caption=caption),
+                                          reply_markup=kb.paginator(buttons=data['buttons'], pref=pref, page=page))
+
+    else:
+        info['category'] = 'Пустая корзина'
+        data = buttons[info['category']]
+        await callback.message.edit_media(media=InputMediaPhoto(media=data['photo'], caption=data['caption']),
+                                          reply_markup=kb.main_menu(buttons=data['buttons']))
+
+
 @router.callback_query(kb.Pagination.filter(F.action))
 async def pagination_handler(callback: CallbackQuery, callback_data: kb.Pagination):
     page_num = int(callback_data.page)
     pref = callback_data.pref
-    print(info['current_item'])
 
     if not len(info[f'{pref}_captions']) == 1:
         if callback_data.action == f'next_{pref}':
@@ -107,7 +143,10 @@ async def pagination_handler(callback: CallbackQuery, callback_data: kb.Paginati
                        f'{info['item_captions'][page]['count']} х {info['item_captions'][page]['price']} руб.\n\n'
                        f'Итого: {info['final_price']:.2f} руб.')
         else:
-            caption = '\n'.join(f'{info[f'{pref}_captions'][page][text]}' for text in info[f'{pref}_captions'][page] if text != 'photo')
+            caption = (f'{info[f'{pref}_captions'][page]['name']}\n'
+                       f'{info[f'{pref}_captions'][page]['mass']}\n'
+                       f'{info[f'{pref}_captions'][page]['price']} руб.')
+
         photo_url = info[f'{pref}_captions'][page]['photo']
         data = buttons[info['category']]
         info['current_item'] = info[f'{pref}_captions'][page]
