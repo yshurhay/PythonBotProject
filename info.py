@@ -37,13 +37,19 @@ buttons = {
         'caption': 'Корзина',
         'buttons': ['-1', '+1', '◀ Пред', 'След ▶', 'На главную', 'Заказать'],
         'photo': 'https://brest.slivki.by/znijki-media/w1044_644/default/1009921/1624555382_veggie-pizza.jpg'
+    },
+    'Пустая корзина': {
+        'caption': 'В корзине ничего нет',
+        'buttons': ['Назад'],
+        'photo': 'https://e7.pngegg.com/pngimages/779/895/png-clipart-shopping-bags-trolleys-shopping-cart-empty-cart-text-logo-thumbnail.png'
     }
 }
 
 
 info = {
     'category': 'Главное меню',
-    'item_captions': []
+    'item_captions': [],
+    'final_price': 0
 }
 
 

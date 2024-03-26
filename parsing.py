@@ -17,7 +17,7 @@ async def get_food_data(url: str):
                 data.append({
                     'name': name,
                     'mass': mass,
-                    'price': price,
+                    'price': price[:-4],
                     'photo': photo
                 })
             return data
