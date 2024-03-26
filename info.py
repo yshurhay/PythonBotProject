@@ -44,8 +44,8 @@ buttons = {
 
 info = {
     'category': 'Главное меню',
-    'item_captions': [],
-    'final_price': 0
+    'item_captions': {},
+    'final_price': {}
 }
 
 
