@@ -1,4 +1,4 @@
-from aiogram.types import InlineKeyboardButton
+from aiogram.types import InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.filters.callback_data import CallbackData
 
@@ -36,3 +36,37 @@ def main_menu(buttons: list[str]):
         builder.add(InlineKeyboardButton(text=button, callback_data=button))
 
     return builder.adjust(2).as_markup()
+
+
+def name_kb(name):
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(text=name)
+            ]
+        ],
+        resize_keyboard=True
+    )
+
+
+contact_kb = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text='Отправить контакт', request_contact=True)
+        ]
+    ],
+    resize_keyboard=True
+)
+
+
+payment_kb = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text='Картой курьеру'),
+        ],
+        [
+            KeyboardButton(text='Наличными курьеру')
+        ]
+    ],
+    resize_keyboard=True
+)

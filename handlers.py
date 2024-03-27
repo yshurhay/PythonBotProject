@@ -1,10 +1,19 @@
-from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery, InputMediaPhoto
+from aiogram import Router, F, Bot
+from aiogram.types import Message, CallbackQuery, InputMediaPhoto, ReplyKeyboardRemove
 from aiogram.filters import CommandStart, or_f
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.context import FSMContext
 import keyboards as kb
 from info import buttons, info
 
 router = Router()
+
+
+class Order(StatesGroup):
+    name = State()
+    number = State()
+    address = State()
+    payment = State()
 
 
 @router.message(CommandStart())
@@ -114,6 +123,57 @@ async def pagination_handler(callback: CallbackQuery, callback_data: kb.Paginati
 
         await callback.message.edit_media(media=InputMediaPhoto(media=photo_url, caption=caption),
                                           reply_markup=kb.paginator(buttons=data['buttons'], pref=pref, page=page))
+
+
+@router.callback_query(F.data == 'Заказать')
+async def order_food(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
+    await state.set_state(Order.name)
+    await callback.message.answer('Введите ваше имя', reply_markup=kb.name_kb(callback.from_user.first_name))
+
+
+@router.message(Order.name)
+async def name(message: Message, state: FSMContext):
+    await state.update_data(name=message.text)
+    await state.set_state(Order.number)
+    await message.answer('Введите ваш номер', reply_markup=kb.contact_kb)
+
+
+@router.message(Order.number)
+async def number(message: Message, state: FSMContext):
+    if message.text:
+        await state.update_data(number=message.text)
+    else:
+        await state.update_data(number=f'+{message.contact.phone_number}')
+    await state.set_state(Order.address)
+    await message.answer('Введите адрес', reply_markup=ReplyKeyboardRemove())
+
+
+@router.message(Order.address)
+async def address(message: Message, state: FSMContext):
+    await state.update_data(address=message.text)
+    await state.set_state(Order.payment)
+    await message.answer('Как будете оплачивать?', reply_markup=kb.payment_kb)
+
+
+@router.message(Order.payment)
+async def payment(message: Message, state: FSMContext, bot: Bot):
+    await state.update_data(payment=message.text)
+    data = await state.get_data()
+    user_id = message.from_user.id
+    text = ''
+    for item in info['item_captions'][user_id]:
+        text += f'{item['name']}\n'
+        text += f'{item['count']} x {item['price']} руб.\n'
+    order = (f'Заказ:\n\n'
+             f'Имя: {data['name']}\n'
+             f'Номер: {data['number']}\n'
+             f'Адрес: {data['address']}\n'
+             f'Оплата: {data['payment']}\n\n'
+             f'{text}\n'
+             f'Итого: {info['final_price'][user_id]} руб.')
+    await message.answer('Ваш заказ принят', reply_markup=ReplyKeyboardRemove())
+    await bot.send_message(chat_id='689120290', text=order)
 
 
 @router.callback_query(F.data == 'Купить')
