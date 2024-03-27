@@ -30,7 +30,7 @@ async def get_about_data():
             soup = BeautifulSoup(r, 'html.parser')
             items = soup.find_all('p')
 
-            return '\n'.join(item.text.strip() for item in items if not item.text.strip().startswith('Доставка'))
+            return '\n'.join(item.text.strip() for item in items if not item.text.strip().startswith('Доставка') and not item.text.strip().startswith('Мы'))
 
 
 async def get_delivery_data():

@@ -19,9 +19,9 @@ dp.include_router(router)
 
 
 async def main():
-    buttons['О нас']['caption'] = await get_about_data()
-    buttons['Доставка']['caption'] = await get_delivery_data()
-    buttons['Оплата']['caption'] = await get_payments_data()
+    buttons['О нас 💭']['caption'] = await get_about_data()
+    buttons['Доставка 🚗']['caption'] = await get_delivery_data()
+    buttons['Оплата 💸']['caption'] = await get_payments_data()
     info['pizza_captions'] = await get_food_data('https://pizza-italia.by/catalog/pitstsa/')
     info['rolotto_captions'] = await get_food_data('https://pizza-italia.by/catalog/rolly/')
     info['drink_captions'] = await get_food_data('https://pizza-italia.by/catalog/kholodnye-napitki/')

@@ -5,6 +5,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 import keyboards as kb
 from info import buttons, info
+from datetime import datetime, time
 
 router = Router()
 
@@ -125,11 +126,16 @@ async def pagination_handler(callback: CallbackQuery, callback_data: kb.Paginati
                                           reply_markup=kb.paginator(buttons=data['buttons'], pref=pref, page=page))
 
 
-@router.callback_query(F.data == 'Заказать')
+@router.callback_query(F.data == 'Заказать ✅')
 async def order_food(callback: CallbackQuery, state: FSMContext):
-    await callback.answer()
-    await state.set_state(Order.name)
-    await callback.message.answer('Введите ваше имя', reply_markup=kb.name_kb(callback.from_user.first_name))
+    """Start to fill in data about order"""
+
+    if not time(10) < datetime.now().time() < time(23, 30):
+        await callback.answer('Доставка работает с 12:00')
+    else:
+        await callback.answer()
+        await state.set_state(Order.name)
+        await callback.message.answer('Введите ваше имя', reply_markup=kb.name_kb(callback.from_user.first_name))
 
 
 @router.message(Order.name)
@@ -161,6 +167,7 @@ async def payment(message: Message, state: FSMContext, bot: Bot):
     await state.update_data(payment=message.text)
     data = await state.get_data()
     user_id = message.from_user.id
+
     text = ''
     for item in info['item_captions'][user_id]:
         text += f'{item['name']}\n'
@@ -172,11 +179,12 @@ async def payment(message: Message, state: FSMContext, bot: Bot):
              f'Оплата: {data['payment']}\n\n'
              f'{text}\n'
              f'Итого: {info['final_price'][user_id]} руб.')
+
     await message.answer('Ваш заказ принят', reply_markup=ReplyKeyboardRemove())
     await bot.send_message(chat_id='689120290', text=order)
 
 
-@router.callback_query(F.data == 'Купить')
+@router.callback_query(F.data == 'Купить 💲')
 async def add_to_cart(callback: CallbackQuery):
     """Add item to the cart and notify about it"""
 
@@ -192,14 +200,14 @@ async def add_to_cart(callback: CallbackQuery):
         info['item_captions'][user_id].append(info['current_item'])
 
 
-@router.callback_query(or_f(F.data == 'Назад', F.data == 'На главную'))
+@router.callback_query(or_f(F.data == 'Назад 🔙', F.data == 'На главную 🏡'))
 async def back(callback: CallbackQuery):
     """Create 'back' events and create 'old' buttons"""
 
     await callback.answer()
 
-    if info['category'] in ('Пицца', 'Ролотто', 'Напитки'):
-        info['category'] = 'Товары'
+    if info['category'] in ('Пицца 🍕', 'Ролотто 🌯', 'Напитки 🍸'):
+        info['category'] = 'Товары 🍔'
     else:
         info['category'] = 'Главное меню'
 
@@ -209,7 +217,7 @@ async def back(callback: CallbackQuery):
                                       reply_markup=kb.main_menu(buttons=data['buttons']))
 
 
-@router.callback_query(F.data == 'Корзина')
+@router.callback_query(F.data == 'Корзина 🛒')
 async def callback_food(callback: CallbackQuery):
     """Create buttons and cart information"""
 
@@ -242,7 +250,7 @@ async def callback_food(callback: CallbackQuery):
                                           reply_markup=kb.main_menu(buttons=data['buttons']))
 
 
-@router.callback_query(or_f(F.data == 'Пицца', F.data == 'Ролотто', F.data == 'Напитки'))
+@router.callback_query(or_f(F.data == 'Пицца 🍕', F.data == 'Ролотто 🌯', F.data == 'Напитки 🍸'))
 async def callback_food(callback: CallbackQuery):
     """Create buttons with food information"""
 
@@ -250,11 +258,11 @@ async def callback_food(callback: CallbackQuery):
 
     pref = ''
 
-    if callback.data == 'Пицца':
+    if callback.data == 'Пицца 🍕':
         pref = 'pizza'
-    elif callback.data == 'Ролотто':
+    elif callback.data == 'Ролотто 🌯':
         pref = 'rolotto'
-    elif callback.data == 'Напитки':
+    elif callback.data == 'Напитки 🍸':
         pref = 'drink'
 
     info['current_item'] = info[f'{pref}_captions'][0]
@@ -282,6 +290,3 @@ async def callback_data_handler(callback: CallbackQuery):
 
     await callback.message.edit_media(media=InputMediaPhoto(media=data['photo'], caption=data['caption']),
                                       reply_markup=kb.main_menu(buttons=data['buttons']))
-
-
-
