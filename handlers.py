@@ -1,11 +1,15 @@
+from datetime import datetime, time
+
 from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery, InputMediaPhoto, ReplyKeyboardRemove
 from aiogram.filters import CommandStart, or_f
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
+
 import keyboards as kb
+from address import get_address
 from info import buttons, info
-from datetime import datetime, time
+
 
 router = Router()
 
@@ -130,7 +134,7 @@ async def pagination_handler(callback: CallbackQuery, callback_data: kb.Paginati
 async def order_food(callback: CallbackQuery, state: FSMContext):
     """Start to fill in data about order"""
 
-    if not time(10) < datetime.now().time() < time(23, 30):
+    if not time(8) < datetime.now().time() < time(23, 30):
         await callback.answer('Доставка работает с 12:00')
     else:
         await callback.answer()
@@ -150,14 +154,20 @@ async def number(message: Message, state: FSMContext):
     if message.text:
         await state.update_data(number=message.text)
     else:
-        await state.update_data(number=f'+{message.contact.phone_number}')
+        await state.update_data(number=message.contact.phone_number)
     await state.set_state(Order.address)
-    await message.answer('Введите адрес', reply_markup=ReplyKeyboardRemove())
+    await message.answer('Введите адрес', reply_markup=kb.address_kb)
 
 
 @router.message(Order.address)
 async def address(message: Message, state: FSMContext):
-    await state.update_data(address=message.text)
+    if message.text:
+        await state.update_data(address=message.text)
+    else:
+        latitude, longitude = message.location.latitude, message.location.longitude
+        my_address = ', '.join(get_address(latitude, longitude).split(', ')[:3])
+        await state.update_data(address=my_address)
+
     await state.set_state(Order.payment)
     await message.answer('Как будете оплачивать?', reply_markup=kb.payment_kb)
 
@@ -171,15 +181,20 @@ async def payment(message: Message, state: FSMContext, bot: Bot):
     text = ''
     for item in info['item_captions'][user_id]:
         text += f'{item['name']}\n'
-        text += f'{item['count']} x {item['price']} руб.\n'
+        text += f'{item['count']} x {item['price']}руб.\n'
     order = (f'Заказ:\n\n'
              f'Имя: {data['name']}\n'
              f'Номер: {data['number']}\n'
              f'Адрес: {data['address']}\n'
-             f'Оплата: {data['payment']}\n\n'
+             f'Оплата: {data['payment']}\n'
+             f'Дата и время: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n\n'
              f'{text}\n'
              f'Итого: {info['final_price'][user_id]} руб.')
 
+    with open('orders.txt', 'a', encoding='utf-8') as file:
+        file.write(f'{order}\n-----------\n')
+
+    info['item_captions'][message.from_user.id] = []
     await message.answer('Ваш заказ принят', reply_markup=ReplyKeyboardRemove())
     await bot.send_message(chat_id='689120290', text=order)
 

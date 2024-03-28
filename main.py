@@ -6,9 +6,7 @@ from aiogram import Bot, Dispatcher
 from dotenv import find_dotenv, load_dotenv
 
 from handlers import router
-
 from parsing import get_food_data, get_about_data, get_delivery_data, get_payments_data
-
 from info import buttons, info
 
 load_dotenv(find_dotenv())

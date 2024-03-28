@@ -58,6 +58,15 @@ contact_kb = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
+address_kb = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text='Отправить координаты', request_location=True)
+        ]
+    ],
+    resize_keyboard=True
+)
+
 
 payment_kb = ReplyKeyboardMarkup(
     keyboard=[
