@@ -1,7 +1,7 @@
 buttons = {
     'Главное меню': {
         'caption': 'Добро пожаловать!',
-        'buttons': ['Товары 🍔', 'Корзина 🛒', 'О нас 💭', 'Оплата 💸', 'Доставка 🚗'],
+        'buttons': ['Товары 🍔', 'Корзина 🛒', 'О нас 💭', 'Оплата 💸', 'Доставка 🚗', 'Акции 💥'],
         'photo': 'https://pizzaitalia.by/upload/iblock/pizza%20italia-38.png'
     },
     'Товары 🍔': {
@@ -20,6 +20,12 @@ buttons = {
     'Доставка 🚗': {
         'buttons': ['Назад 🔙'],
         'photo': 'https://s1.eda.ru/StaticContent/Photos/120131085053/171027192707/p_O.jpg'
+    },
+    'Акции 💥': {
+        'caption': 'При каждом 10 заказе, Пицца Италия Микс 70 см. в подарок!\n\n'
+                   'Количество ваших заказов: ',
+        'buttons': ['Назад 🔙'],
+        'photo': 'https://kauveryhospital.com/blog/wp-content/uploads/2021/04/pizza-5179939_960_720.jpg'
     },
     'Пицца 🍕': {
         'buttons': ['◀ Пред', 'След ▶', 'Купить 💲', 'Корзина 🛒', 'Назад 🔙']
@@ -45,7 +51,8 @@ buttons = {
 info = {
     'category': 'Главное меню',
     'item_captions': {},
-    'final_price': {}
+    'final_price': {},
+    'bonus': {}
 }
 
 

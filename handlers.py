@@ -178,10 +178,23 @@ async def payment(message: Message, state: FSMContext, bot: Bot):
     data = await state.get_data()
     user_id = message.from_user.id
 
+    info['bonus'][user_id] += 1
+
+    with open('bonus.txt', 'w', encoding='utf-8') as file:
+        text = ''
+        for k, v in info['bonus'].items():
+            text += f'{k} {v}\n'
+        file.write(text)
+    print(info['bonus'])
+
     text = ''
     for item in info['item_captions'][user_id]:
         text += f'{item['name']}\n'
         text += f'{item['count']} x {item['price']}руб.\n'
+
+    if info['bonus'][user_id] % 10 == 0:
+        text += 'Пицца Италия Микс 70 см.\n1 x 0.00 руб.\n'
+
     order = (f'Заказ:\n\n'
              f'Имя: {data['name']}\n'
              f'Номер: {data['number']}\n'
@@ -195,7 +208,7 @@ async def payment(message: Message, state: FSMContext, bot: Bot):
         file.write(f'{order}\n-----------\n')
 
     info['item_captions'][message.from_user.id] = []
-    await message.answer('Ваш заказ принят', reply_markup=ReplyKeyboardRemove())
+    await message.answer(f'Ваш заказ принят\nКоличество ваших заказов: {info['bonus'][user_id]}', reply_markup=ReplyKeyboardRemove())
     await bot.send_message(chat_id='689120290', text=order)
 
 
