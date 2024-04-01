@@ -5,7 +5,6 @@ from aiogram import Bot, Dispatcher
 
 from dotenv import find_dotenv, load_dotenv
 
-from bonuses import get_bonus_info
 from handlers import router
 from parsing import get_food_data, get_about_data, get_delivery_data, get_payments_data
 from info import buttons, info
@@ -18,7 +17,6 @@ dp.include_router(router)
 
 
 async def main():
-    buttons['Акции 💥']['caption'] += f'{get_bonus_info()}'
     buttons['О нас 💭']['caption'] = await get_about_data()
     buttons['Доставка 🚗']['caption'] = await get_delivery_data()
     buttons['Оплата 💸']['caption'] = await get_payments_data()

@@ -2,12 +2,13 @@ from datetime import datetime, time
 
 from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery, InputMediaPhoto, ReplyKeyboardRemove
-from aiogram.filters import CommandStart, or_f
+from aiogram.filters import or_f, Command
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
 import keyboards as kb
 from address import get_address
+from bonuses import get_bonus_info
 from info import buttons, info
 
 
@@ -21,11 +22,14 @@ class Order(StatesGroup):
     payment = State()
 
 
-@router.message(CommandStart())
+@router.message(or_f(Command('start'), Command('menu')))
 async def start_cmd(message: Message):
     """Event to /start cmd"""
 
     user_id = message.from_user.id
+    buttons['Акции 💥'][user_id] = get_bonus_info(user_id)
+    buttons['Акции 💥']['caption'] += f'{buttons['Акции 💥'][user_id]}'
+
     info['item_captions'][user_id] = []
     info['final_price'][user_id] = 0
     info['category'] = 'Главное меню'
@@ -94,7 +98,7 @@ async def pagination_handler(callback: CallbackQuery, callback_data: kb.Paginati
 
         photo_url = info[f'item_captions'][user_id][page]['photo']
         data = buttons[info['category']]
-        info['current_item'] = info[f'item_captions'][user_id][page]
+        info['current_item'][user_id] = info[f'item_captions'][user_id][page]
         caption = (f'{info['item_captions'][user_id][page]['name']}\n'
                    f'{info['item_captions'][user_id][page]['mass']}\n'
                    f'{info['item_captions'][user_id][page]['count']} х {info['item_captions'][user_id][page]['price']} руб.\n\n'
@@ -112,6 +116,7 @@ async def pagination_handler(callback: CallbackQuery, callback_data: kb.Paginati
 
     page_num = int(callback_data.page)
     pref = callback_data.pref
+    user_id = callback.from_user.id
 
     if not len(info[f'{pref}_captions']) == 1:
         if callback_data.action == f'next_{pref}':
@@ -121,7 +126,7 @@ async def pagination_handler(callback: CallbackQuery, callback_data: kb.Paginati
 
         photo_url = info[f'{pref}_captions'][page]['photo']
         data = buttons[info['category']]
-        info['current_item'] = info[f'{pref}_captions'][page]
+        info['current_item'][user_id] = info[f'{pref}_captions'][page]
         caption = (f'{info[f'{pref}_captions'][page]['name']}\n'
                    f'{info[f'{pref}_captions'][page]['mass']}\n'
                    f'{info[f'{pref}_captions'][page]['price']} руб.')
@@ -218,14 +223,14 @@ async def add_to_cart(callback: CallbackQuery):
 
     user_id = callback.from_user.id
 
-    if info['current_item'] in info['item_captions'][user_id]:
+    if info['current_item'][user_id] in info['item_captions'][user_id]:
         await callback.answer('Товар уже в корзине')
 
     else:
         await callback.answer('Добавлено в корзину')
-        info['final_price'][user_id] += float(info['current_item']['price'])
-        info['current_item']['count'] = 1
-        info['item_captions'][user_id].append(info['current_item'])
+        info['final_price'][user_id] += float(info['current_item'][user_id]['price'])
+        info['current_item'][user_id]['count'] = 1
+        info['item_captions'][user_id].append(info['current_item'][user_id])
 
 
 @router.callback_query(or_f(F.data == 'Назад 🔙', F.data == 'На главную 🏡'))
@@ -256,7 +261,7 @@ async def callback_food(callback: CallbackQuery):
     if info['item_captions'][user_id]:
 
         pref = 'item'
-        info['current_item'] = info['item_captions'][user_id][0]
+        info['current_item'][user_id] = info['item_captions'][user_id][0]
         category = callback.data
         info['category'] = category
         data = buttons[info['category']]
@@ -285,6 +290,7 @@ async def callback_food(callback: CallbackQuery):
     await callback.answer()
 
     pref = ''
+    user_id = callback.from_user.id
 
     if callback.data == 'Пицца 🍕':
         pref = 'pizza'
@@ -293,7 +299,7 @@ async def callback_food(callback: CallbackQuery):
     elif callback.data == 'Напитки 🍸':
         pref = 'drink'
 
-    info['current_item'] = info[f'{pref}_captions'][0]
+    info['current_item'][user_id] = info[f'{pref}_captions'][0]
     category = callback.data
     info['category'] = category
     data = buttons[info['category']]

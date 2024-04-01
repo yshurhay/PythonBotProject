@@ -52,7 +52,8 @@ info = {
     'category': 'Главное меню',
     'item_captions': {},
     'final_price': {},
-    'bonus': {}
+    'bonus': {},
+    'current_item': {}
 }
 
 
