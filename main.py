@@ -2,6 +2,7 @@ import asyncio
 import os
 
 from aiogram import Bot, Dispatcher
+from aiogram.types import BotCommand
 
 from dotenv import find_dotenv, load_dotenv
 
@@ -24,6 +25,8 @@ async def main():
     info['rolotto_captions'] = await get_food_data('https://pizza-italia.by/catalog/rolly/')
     info['drink_captions'] = await get_food_data('https://pizza-italia.by/catalog/kholodnye-napitki/')
     await bot.delete_webhook(drop_pending_updates=True)
+    await bot.set_my_commands(commands=[BotCommand(command='menu', description='show menu'),
+                                        BotCommand(command='start', description='show menu')])
     await dp.start_polling(bot)
 
 
