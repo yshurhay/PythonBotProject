@@ -321,6 +321,5 @@ async def callback_data_handler(callback: CallbackQuery):
     category = callback.data
     info['category'] = category
     data = buttons[info['category']]
-
     await callback.message.edit_media(media=InputMediaPhoto(media=data['photo'], caption=data['caption']),
                                       reply_markup=kb.main_menu(buttons=data['buttons']))
